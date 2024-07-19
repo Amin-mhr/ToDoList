@@ -31,13 +31,21 @@ func pgConnection() *gorm.DB {
 	return db
 }
 
-func retriveToDos(db *gorm.DB) []Todo {
+func retriveToDos(db *gorm.DB) ([]Todo, error) {
 	var Todos []Todo
-	db.Find(&Todos)
-	return Todos
+	result := db.Find(&Todos)
+	if result.Error != nil {
+		log.Fatal("Database migration failed : ", result.Error)
+		return nil, result.Error
+	}
+	return Todos, nil
 }
 
-func addToDo(db *gorm.DB, todo Todo) {
-	db.Create(todo)
-	return
+func addToDo(db *gorm.DB, Todo Todo) error {
+	result := db.Create(&Todo)
+	if result.Error != nil {
+		log.Fatal("Database migration failed : ", result.Error)
+		return result.Error
+	}
+	return nil
 }

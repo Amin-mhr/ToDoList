@@ -23,15 +23,24 @@ func AddToDo(db *gorm.DB) gin.HandlerFunc {
 		var todo Todo
 		if err := c.Bind(&todo); err != nil {
 			log.Print("binding todo failed : ", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) //more compact than indentedJson but debug is easier in indentedJson
 		}
-		addToDo()
+		err := addToDo(db, todo)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		c.IndentedJSON(http.StatusOK, todo)
+
 	}
 
 }
 
 func getAllToDos(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		Todos := retriveToDos(db)
+		Todos, err := retriveToDos(db)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
 		c.IndentedJSON(http.StatusOK, Todos)
 	}
 
